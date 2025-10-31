@@ -106,6 +106,118 @@ def make_control(text, action_id):
     )
 
 
+def fig_mip(mip_x, mip_y, mip_z):
+    #hacked up IMD 2025-09-28 to scale xz and yz plot by 3x as res likely 3 smaller.
+    #really need to read voxel sizes and scale depemding on them
+    #then both scaleratio and the row_heights params can be set correctly. 
+    fig = make_subplots(
+        rows=2,
+        cols=2,
+        specs=[[{}, {}], [{"colspan": 2}, None]],
+        row_heights=[0.75,0.25], #trying to compensate for the fixed title overhead
+        subplot_titles=("MIP X axis", "MIP Y axis", "MIP Z axis"),
+    )
+    fig = fig.add_trace(mip_x.data[0], row=1, col=1)
+    fig = fig.add_trace(mip_y.data[0], row=1, col=2)
+    fig = fig.add_trace(mip_z.data[0], row=2, col=1)
+    fig = fig.update_layout(
+        coloraxis=dict(colorscale="hot"),
+        autosize=False,
+        margin=dict(l=0, r=0, t=0, b=0),
+    )
+    fig.update_layout(
+        {
+            "xaxis": {
+                "visible": False,
+                "automargin": False,
+                "rangemode": "nonnegative",
+            },
+            "xaxis2": {
+                "visible": False,
+                "automargin": False,
+                "rangemode": "nonnegative",
+            },
+            "xaxis3": {
+                "visible": False,
+                "automargin": False,
+                "rangemode": "nonnegative",
+            },
+            "yaxis": {
+                "visible": False,
+                "anchor": "x",
+                "scaleanchor": "x",
+                "scaleratio": 3,
+                "autorange": "reversed",
+                "automargin": False,
+            },
+            "yaxis2": {
+                "visible": False,
+                "anchor": "x2",
+                "scaleanchor": "x2",
+                "scaleratio": 3,
+                "autorange": "reversed",
+                "automargin": False,
+            },
+            "yaxis3": {
+                "visible": False,
+                "anchor": "x3",
+                "scaleanchor": "x3",
+                "autorange": "reversed",
+                "automargin": False,
+            },
+        }
+    )
+    return fig
+
+
+def mip_graphs(
+    x0: int,
+    xf: int,
+    y0: int,
+    yf: int,
+    stack: Union[np.array, list],
+    do_sqrt: bool = True,
+):
+    image_bead = stack[:, y0:yf, x0:xf]
+    image_x = np.max(image_bead, axis=1)
+    image_y = np.max(image_bead, axis=2)
+    image_z = np.max(image_bead, axis=0)
+    if do_sqrt:
+        image_x = np.sqrt(image_x)
+        image_y = np.sqrt(image_y)
+        image_z = np.sqrt(image_z)
+    image_x = image_x / image_x.max()
+    image_y = image_y / image_y.max()
+    image_z = image_z / image_z.max()
+
+    mip_x = px.imshow(
+        image_x,
+        zmin=image_x.min(),
+        zmax=image_x.max(),
+    )
+    mip_y = px.imshow(
+        image_y,
+        zmin=image_y.min(),
+        zmax=image_y.max(),
+    )
+    mip_z = px.imshow(
+        image_z,
+        zmin=image_z.min(),
+        zmax=image_z.max(),
+    )
+    return mip_x, mip_y, mip_z
+
+
+def crop_bead_index(bead, min_dist, stack):
+    x = bead["center_x"].values[0]
+    y = bead["center_y"].values[0]
+    x0 = max(0, x - min_dist)
+    y0 = max(0, y - min_dist)
+    xf = min(stack.shape[2], x + min_dist)
+    yf = min(stack.shape[1], y + min_dist)
+    return x0, xf, y0, yf
+
+
 download_group = dmc.Group(
     [
         dmc.Menu(
