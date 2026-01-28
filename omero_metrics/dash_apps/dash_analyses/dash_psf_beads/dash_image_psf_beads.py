@@ -379,7 +379,7 @@ def callback_mip(points, channel_index, **kwargs):
         ]
         x_pos = int(my_bead_df["center_x"].values[0])
         y_pos = int(my_bead_df["center_y"].values[0])
-
+        shape = mm_image.array_data.shape
         stack = mm_image.array_data[
             0,  # time
             :,  # z-dimension
@@ -395,8 +395,8 @@ def callback_mip(points, channel_index, **kwargs):
         ]
 
         mips = {
-            "x": np.transpose(np.max(stack, axis=2)),
-            "y": np.max(stack, axis=1),
+            "x": np.transpose(np.max(stack[int(shape[1]/4):int((3*shape[1])/4),:,:], axis=2)),
+            "y": np.max(stack[int(shape[1]/4):int((3*shape[1])/4),:,:], axis=1),
             "z": np.max(stack, axis=0),
         }
         mips = {a: np.sqrt(mip) for a, mip in mips.items()}
@@ -474,7 +474,7 @@ def fig_bead(
     }
     if all(list(voxel_size.values())):
         voxel_size_ratio = voxel_size["z"] / voxel_size["x"]
-        physical_unit = "µ"
+        physical_unit = "µm"
     else:
         voxel_size_ratio = 1
         physical_unit = "px"
@@ -558,13 +558,19 @@ def fig_bead(
             plot_x_axis = "x"
             plot_y_axis = "y"
 
+        if axis == "z" :
+            lowerlimit=int(len(profiles[axis]["fitted"])/4)
+            upperlimit=int(3*len(profiles[axis]["fitted"])/4)
+        else:
+            lowerlimit=0
+            upperlimit=len(profiles[axis]["fitted"])
         # Add traces
         fig.add_trace(
             go.Scatter(
                 name=f"{axis.upper()} raw profile",
                 mode="lines",
                 line=dict(color="red"),
-                **{plot_y_axis: profiles[axis]["raw"]},
+                **{plot_y_axis: profiles[axis]["raw"][lowerlimit:upperlimit]}
             ),
             row=row,
             col=col,
@@ -574,7 +580,7 @@ def fig_bead(
                 name=f"{axis.upper()} fitted profile",
                 mode="lines",
                 line=dict(color="blue", dash="dot"),
-                **{plot_y_axis: profiles[axis]["fitted"]},
+                **{plot_y_axis: profiles[axis]["fitted"][lowerlimit:upperlimit]}
             ),
             row=row,
             col=col,
@@ -669,6 +675,7 @@ def get_bead_profiles(bead_index, channel_index, image_id, mm_dataset):
         axis: load.load_table_mm_metrics(mm_dataset.output[f"bead_profiles_{axis}"])
         for axis in ("x", "y", "z")
     }
+    lenz=len(profiles["z"])
     # TODO: we have chosen to show the gaussian fit but once the airy fit is fixed, we should add the option to
     #  choose between gaussian and airy
     profiles = {
