@@ -109,8 +109,19 @@ def PSFBeadsDataset_input_data_Image(im):
 
 
 def PSFBeadsDataset_output_AveragePSF(im):
-    im.mm_image = load.load_image(im.omero_image, load_array=False)
-    im.context = {"message": "View of output average PSF not supported yet"}
+    im.mm_image = load.load_image(im.omero_image, load_array=True)
+    mip_z = np.max(im.mm_image.array_data[0, ...], axis=0)
+    mip_y = np.max(im.mm_image.array_data[0, ...], axis=1)
+    mip_x = np.max(im.mm_image.array_data[0, ...], axis=2)
+    context = {
+        "image_index": im.image_index,
+        "mm_image": im.mm_image,
+        "mm_dataset": im.dataset_manager.mm_dataset,
+        "mip_z": mip_z,
+        "mip_y": mip_y,
+        "mip_x": mip_x,
+    }
+    im.context = serialize(context) #{"message": "View of output average PSF not supported yet"}
 
 
 ## Dataset context loaders
