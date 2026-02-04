@@ -44,6 +44,7 @@ KKM_MAPPINGS = {
     ],
     "PSFBeadsDataset": [
         "considered_valid_count",
+        "total_bead_count",
         "fwhm_micron_x_mean",
         "fwhm_micron_y_mean",
         "fwhm_micron_z_mean",
@@ -51,9 +52,23 @@ KKM_MAPPINGS = {
         "fwhm_micron_y_std",
         "fwhm_micron_z_std",
         "fwhm_lateral_asymmetry_ratio_mean",
-        "fit_r2_x_mean",
-        "fit_r2_y_mean",
-        "fit_r2_z_mean",
+        "fwhm_lateral_asymmetry_ratio_std",
+        "fit_airy_r2_z_mean",
+        "fit_airy_r2_y_mean",
+        "fit_airy_r2_x_mean",
+        "fit_gaussian_r2_z_mean",
+        "fit_gaussian_r2_y_mean",
+        "fit_gaussian_r2_x_mean",
+        "average_bead_fit_airy_r2_z",
+        "average_bead_fit_airy_r2_y",
+        "average_bead_fit_airy_r2_x",
+        "average_bead_fit_gaussian_r2_z",
+        "average_bead_fit_gaussian_r2_y",
+        "average_bead_fit_gaussian_r2_x",
+        "average_bead_fwhm_micron_z",
+        "average_bead_fwhm_micron_y",
+        "average_bead_fwhm_micron_x",
+        "average_bead_fwhm_lateral_asymmetry_ratio",
     ],
 }
 
@@ -65,6 +80,7 @@ TEMPLATE_MAPPINGS_DATASET = {
 TEMPLATE_MAPPINGS_IMAGE = {
     "FieldIlluminationDataset": {
         "input_data": "omero_image_foi",
+        "output": "WarningApp",
     },
     "PSFBeadsDataset": {
         "input_data": "omero_image_psf_beads",
