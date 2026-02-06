@@ -243,12 +243,12 @@ def update_image(channel_index, color, invert, **kwargs):
  #       scatter, roi_rect = beads_scatter_plot(
  #           beads_location_df, half_min_distance_px
  #       )
-        logger.error(f"In ave bead updateimage")
+
         if invert:
             color = f"{color}_r"
-        mip ={"z": context["mip_z"][..., channel_index],
-              "y": context["mip_y"][..., channel_index],
-              "x": context["mip_x"][..., channel_index],}
+        mip ={"z": context["mips"]["z"][..., channel_index],
+              "y": context["mips"]["y"][..., channel_index],
+              "x": context["mips"]["x"][..., channel_index],}
               
 
         voxel_size = {
@@ -260,8 +260,13 @@ def update_image(channel_index, color, invert, **kwargs):
         axis_lengths = {
             "x": mip["z"].shape[1],
             "y": mip["z"].shape[0],
-            "z": mip["x"].shape[0],
+            "z": mip["x"].shape[1],
         }
+        shape=np.shape(mm_image.array_data[0, ...])
+        for dim in shape:
+            logger.error("im Shape %s"%(dim))
+        logger.error("Shape z %s, y %s, x %s"%(mip["z"].shape,mip["y"].shape,mip["x"].shape))
+
         if all(list(voxel_size.values())):
             voxel_size_ratio = voxel_size["z"] / voxel_size["x"]
             physical_unit = "µm"
@@ -294,6 +299,7 @@ def update_image(channel_index, color, invert, **kwargs):
             horizontal_spacing=0.02,
             vertical_spacing=0.02,
         )
+        logger.error("axislengths %s , voxel %s" %(axis_lengths,voxel_size_ratio))
         
         # Add MIP image
         for proj_axis, h_axis, v_axis, row, col, rotate in zip(
